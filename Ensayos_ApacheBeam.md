@@ -10,7 +10,8 @@ from google.cloud import storage
 bucket_name='jropero'
 
 #Funcion ParDo
-class prueba(beam.DoFn):
+
+ class prueba(beam.DoFn):
   def process(self,element):
     client= storage.Client()
     bucket = client.get_bucket(element)
@@ -22,7 +23,6 @@ class prueba(beam.DoFn):
     files=[]
     for name in names:
       files.append(name)
-
     for i in files:
       blob = bucket.get_blob(i)
       df= blob.download_as_string()
@@ -36,26 +36,26 @@ class prueba(beam.DoFn):
      
 #Para prueba en Local:
 
-p= beam.Pipeline(InteractiveRunner())
-input= (p | "Creamoss la PCollection" >> beam.Create([bucket_name])
+ p= beam.Pipeline(InteractiveRunner())
+ input= (p | "Creamoss la PCollection" >> beam.Create([bucket_name])
   | "Transformaciones" >>beam.ParDo(prueba()))
  
-ib.show(input)
+ ib.show(input)
 
 #Para Dataflow:
 
-beam_options = PipelineOptions(
+ beam_options = PipelineOptions(
     runner='DataflowRunner',
     project='ensayocarto-345108',
     job_name='pruebadataflow',
     temp_location='gs://jropero/temp',
     region ='europe-west1',
     numWorkers = 2
-)
+ )
 
 
-with beam.Pipeline(options=beam_options) as p:
-  input= (p | "Creamoss la PCollection" >> beam.Create([files])
+ with beam.Pipeline(options=beam_options) as p:
+   input= (p | "Creamoss la PCollection" >> beam.Create([files])
     | "Transformaciones" >>beam.ParDo(prueba()))
 
  
