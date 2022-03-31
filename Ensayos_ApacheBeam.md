@@ -31,7 +31,8 @@ class prueba(beam.DoFn):
       escrito = ("El documento " + blob.name + " tiene "+ str(res) + " palabras" )
       bucket = client.get_bucket('jropero')
       blobe = bucket.blob("salida/" + blob.name+" count")
-      yield blobe.upload_from_string(escrito)    yield blobe.upload_from_string(escrito)
+      yield blobe.upload_from_string(escrito)
+      
      
 #Para prueba en Local:
 
