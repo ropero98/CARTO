@@ -6,41 +6,37 @@ from apache_beam.runners.interactive.interactive_runner import InteractiveRunner
 import apache_beam.runners.interactive.interactive_beam as ib
 from apache_beam.options.pipeline_options import PipelineOptions
 from google.cloud import storage
-
+ 
 bucket_name='jropero'
 
-client= storage.Client()
-bucket = client.get_bucket(bucket_name)
-
-blobs = bucket.list_blobs()
-names=[]
-for blob in blobs:
-  name=blob.name
-  names.append(name)
-
-files=[]
-for name in names:
-  files.append(name)
-  
 #Funcion ParDo
 class prueba(beam.DoFn):
- def process(self,element):
+  def process(self,element):
+    client= storage.Client()
+    bucket = client.get_bucket(element)
+    blobs = bucket.list_blobs()
+    names=[]
+    for blob in blobs:
+      name=blob.name
+      names.append(name)
+    files=[]
+    for name in names:
+      files.append(name)
 
-   client = storage.Client()
-   bucket = client.get_bucket('jropero')
-   for i in element:
-     blob = bucket.get_blob(i)
-     df= blob.download_as_string()
-     res = len(df.split())
-     escrito = ("El documento " + blob.name + " tiene "+ str(res) + " palabras" )
-     bucket = client.get_bucket('jropero')
-     blobe = bucket.blob("salida/" + blob.name+" count")
-     yield blobe.upload_from_string(escrito)
+    for i in files:
+      blob = bucket.get_blob(i)
+      df= blob.download_as_string()
+      df= df.upper()
+      res = len(df.split())
+      escrito = ("El documento " + blob.name + " tiene "+ str(res) + " palabras" )
+      bucket = client.get_bucket('jropero')
+      blobe = bucket.blob("salida/" + blob.name+" count")
+      yield blobe.upload_from_string(escrito)    yield blobe.upload_from_string(escrito)
      
 #Para prueba en Local:
 
 p= beam.Pipeline(InteractiveRunner())
-input= (p | "Creamoss la PCollection" >> beam.Create([files])
+input= (p | "Creamoss la PCollection" >> beam.Create([bucket_name])
   | "Transformaciones" >>beam.ParDo(prueba()))
  
 ib.show(input)
